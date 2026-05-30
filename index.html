@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#1a120b" />
+<title>Coffee Cupping — Spiderweb</title>
+<style>
+  :root {
+    --bg: #1a120b;
+    --bg2: #241810;
+    --panel: #2b1d12;
+    --line: #5a4632;
+    --line-soft: #3d2e1f;
+    --crema: #c8a27a;
+    --crema-bright: #e8c79c;
+    --accent: #d98a3d;
+    --accent-soft: rgba(217, 138, 61, 0.22);
+    --text: #efe2d2;
+    --text-dim: #a8917a;
+    --visible-levers: 4.3;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: radial-gradient(120% 90% at 50% 0%, var(--bg2), var(--bg));
+    color: var(--text);
+    font-family: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+    overscroll-behavior: none;
+  }
+  body {
+    display: flex; flex-direction: column;
+    height: 100dvh; overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  header {
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 14px 16px 4px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 17px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--crema-bright);
+  }
+  header p {
+    margin: 4px 0 0;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+  }
+
+  /* ---- Spiderweb stage ---- */
+  .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+  }
+  svg.web { width: 100%; height: 100%; display: block; touch-action: none; }
+
+  .grid-ring { fill: none; stroke: var(--line-soft); stroke-width: 1; }
+  .grid-ring.outer { stroke: var(--line); }
+  .spoke { stroke: var(--line-soft); stroke-width: 1; }
+  .ring-num { fill: var(--text-dim); font-size: 7px; opacity: 0.55; }
+
+  .data-area {
+    fill: var(--accent-soft);
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    transition: none;
+  }
+  .data-dot { fill: var(--crema-bright); stroke: #2b1d12; stroke-width: 1.5; }
+
+  .axis-label {
+    fill: var(--text);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .axis-val {
+    fill: var(--accent);
+    font-size: 8px;
+    font-weight: 700;
+  }
+
+  /* ---- Levers ---- */
+  .levers-wrap {
+    flex: 0 0 auto;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.25));
+    border-top: 1px solid var(--line-soft);
+  }
+  .levers-hint {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    padding: 7px 0 2px;
+    text-transform: uppercase;
+  }
+  .levers {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0 12px;
+    scrollbar-width: none;
+  }
+  .levers::-webkit-scrollbar { display: none; }
+
+  .lever {
+    flex: 0 0 calc(100% / var(--visible-levers));
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 2px;
+    /* horizontal panning => scroll; vertical => our drag logic */
+    touch-action: pan-x;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .lever-name {
+    font-size: 9.5px;
+    text-align: center;
+    height: 24px;
+    line-height: 11px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dim);
+    letter-spacing: 0.01em;
+  }
+  .lever.active .lever-name { color: var(--crema-bright); }
+
+  .track {
+    position: relative;
+    width: 46px;
+    height: 150px;
+    border-radius: 26px;
+    background:
+      linear-gradient(180deg, #181009, #2a1c11);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), inset 0 -1px 0 rgba(255,255,255,0.04);
+    border: 1px solid var(--line-soft);
+    overflow: hidden;
+  }
+  .fill {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, var(--accent), #9a5a22);
+    opacity: 0.85;
+  }
+  .track-ticks {
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(
+      to top, transparent 0, transparent 13.6px, rgba(255,255,255,0.05) 13.6px, rgba(255,255,255,0.05) 14.6px);
+    pointer-events: none;
+  }
+  .knob {
+    position: absolute;
+    left: 50%;
+    width: 52px; height: 30px;
+    margin-left: -26px;
+    border-radius: 9px;
+    background: linear-gradient(180deg, #f0d6b4, #c69b6d 55%, #a87a4d);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.25);
+    border: 1px solid #8a5f37;
+    cursor: grab;
+    touch-action: pan-x;
+  }
+  .knob::after {
+    content: "";
+    position: absolute; left: 8px; right: 8px; top: 50%;
+    height: 0;
+    border-top: 1px solid rgba(90,50,20,0.55);
+    box-shadow: 0 -4px 0 -3px rgba(90,50,20,0.4), 0 4px 0 -3px rgba(90,50,20,0.4);
+  }
+  .lever.active .knob { cursor: grabbing; box-shadow: 0 4px 10px rgba(0,0,0,0.6), 0 0 0 3px var(--accent-soft), inset 0 1px 0 rgba(255,255,255,0.6); }
+
+  .lever-val {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--crema-bright);
+    font-variant-numeric: tabular-nums;
+    min-width: 34px; text-align: center;
+  }
+  .lever-val small { font-size: 9px; color: var(--text-dim); font-weight: 500; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Coffee Cupping</h1>
+    <p>Drag the levers · swipe sideways for more</p>
+  </header>
+
+  <div class="stage">
+    <svg class="web" viewBox="0 0 320 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+  </div>
+
+  <div class="levers-wrap">
+    <div class="levers-hint">— Tasting Levers —</div>
+    <div class="levers" id="levers"></div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ----- Cupping dimensions (traditional-ish SCA attributes) -----
+  const DIMS = [
+    { key: "fragrance", label: "Fragrance / Aroma", value: 7.2 },
+    { key: "flavor",    label: "Flavor",            value: 8.1 },
+    { key: "aftertaste",label: "Aftertaste",        value: 6.8 },
+    { key: "acidity",   label: "Acidity",           value: 7.6 },
+    { key: "body",      label: "Body",              value: 6.4 },
+    { key: "balance",   label: "Balance",           value: 7.0 },
+    { key: "sweetness", label: "Sweetness",         value: 8.4 },
+    { key: "uniformity",label: "Uniformity",        value: 9.0 },
+    { key: "cleancup",  label: "Clean Cup",         value: 8.7 },
+    { key: "overall",   label: "Overall",           value: 7.8 },
+  ];
+  const MIN = 0, MAX = 10, STEP = 0.1;
+
+  // ===================== Spiderweb =====================
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const svg = document.querySelector("svg.web");
+  const VB = 320, CX = VB / 2, CY = VB / 2 + 6, R = 108;
+  const RINGS = 5;
+  const N = DIMS.length;
+
+  function angleFor(i) { return (-Math.PI / 2) + (i * 2 * Math.PI / N); }
+  function pointAt(i, frac) {
+    const a = angleFor(i);
+    return [CX + Math.cos(a) * R * frac, CY + Math.sin(a) * R * frac];
+  }
+
+  function buildWeb() {
+    // concentric polygon rings
+    for (let r = 1; r <= RINGS; r++) {
+      const frac = r / RINGS;
+      const pts = [];
+      for (let i = 0; i < N; i++) pts.push(pointAt(i, frac).map(v => v.toFixed(1)).join(","));
+      const poly = document.createElementNS(SVGNS, "polygon");
+      poly.setAttribute("points", pts.join(" "));
+      poly.setAttribute("class", "grid-ring" + (r === RINGS ? " outer" : ""));
+      svg.appendChild(poly);
+    }
+    // spokes + value scale numbers on the top spoke
+    for (let i = 0; i < N; i++) {
+      const [x, y] = pointAt(i, 1);
+      const spoke = document.createElementNS(SVGNS, "line");
+      spoke.setAttribute("x1", CX); spoke.setAttribute("y1", CY);
+      spoke.setAttribute("x2", x); spoke.setAttribute("y2", y);
+      spoke.setAttribute("class", "spoke");
+      svg.appendChild(spoke);
+    }
+    // scale numbers along the vertical (top) axis
+    for (let r = 1; r <= RINGS; r++) {
+      const frac = r / RINGS;
+      const num = document.createElementNS(SVGNS, "text");
+      num.setAttribute("x", CX + 3);
+      num.setAttribute("y", CY - R * frac + 3);
+      num.setAttribute("class", "ring-num");
+      num.textContent = (MAX * frac).toFixed(0);
+      svg.appendChild(num);
+    }
+
+    // data area + dots
+    const area = document.createElementNS(SVGNS, "polygon");
+    area.setAttribute("class", "data-area");
+    svg.appendChild(area);
+    svg._area = area;
+    svg._dots = [];
+    svg._labels = [];
+    svg._vals = [];
+
+    for (let i = 0; i < N; i++) {
+      const dot = document.createElementNS(SVGNS, "circle");
+      dot.setAttribute("r", "3");
+      dot.setAttribute("class", "data-dot");
+      svg.appendChild(dot);
+      svg._dots.push(dot);
+
+      // axis label (every point labeled, even if tiny)
+      const a = angleFor(i);
+      const lx = CX + Math.cos(a) * (R + 22);
+      const ly = CY + Math.sin(a) * (R + 22);
+      const cos = Math.cos(a);
+      const label = document.createElementNS(SVGNS, "text");
+      label.setAttribute("class", "axis-label");
+      label.setAttribute("x", lx.toFixed(1));
+      label.setAttribute("y", ly.toFixed(1));
+      label.setAttribute("text-anchor", Math.abs(cos) < 0.25 ? "middle" : (cos > 0 ? "start" : "end"));
+      label.setAttribute("dominant-baseline", "middle");
+      // wrap long labels onto two lines
+      const words = DIMS[i].label.split(" ");
+      if (words.length > 1 && DIMS[i].label.length > 8) {
+        const mid = Math.ceil(words.length / 2);
+        const t1 = document.createElementNS(SVGNS, "tspan");
+        t1.setAttribute("x", lx.toFixed(1)); t1.setAttribute("dy", "-0.4em");
+        t1.textContent = words.slice(0, mid).join(" ");
+        const t2 = document.createElementNS(SVGNS, "tspan");
+        t2.setAttribute("x", lx.toFixed(1)); t2.setAttribute("dy", "1.1em");
+        t2.textContent = words.slice(mid).join(" ");
+        label.appendChild(t1); label.appendChild(t2);
+      } else {
+        label.textContent = DIMS[i].label;
+      }
+      svg.appendChild(label);
+      svg._labels.push(label);
+
+      // numeric value at each vertex
+      const val = document.createElementNS(SVGNS, "text");
+      val.setAttribute("class", "axis-val");
+      val.setAttribute("text-anchor", "middle");
+      val.setAttribute("dominant-baseline", "middle");
+      svg.appendChild(val);
+      svg._vals.push(val);
+    }
+  }
+
+  function renderWeb() {
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const frac = (DIMS[i].value - MIN) / (MAX - MIN);
+      const [x, y] = pointAt(i, frac);
+      pts.push(x.toFixed(1) + "," + y.toFixed(1));
+      svg._dots[i].setAttribute("cx", x.toFixed(1));
+      svg._dots[i].setAttribute("cy", y.toFixed(1));
+      // place value label slightly outside the dot, toward center-out
+      const a = angleFor(i);
+      const vx = CX + Math.cos(a) * (R * frac - 11);
+      const vy = CY + Math.sin(a) * (R * frac - 11);
+      svg._vals[i].setAttribute("x", vx.toFixed(1));
+      svg._vals[i].setAttribute("y", vy.toFixed(1));
+      svg._vals[i].textContent = DIMS[i].value.toFixed(1);
+    }
+    svg._area.setAttribute("points", pts.join(" "));
+  }
+
+  // ===================== Levers =====================
+  const leversEl = document.getElementById("levers");
+  const TRACK_H = 150;       // px usable travel reference
+  const KNOB_H = 30;
+
+  DIMS.forEach((dim, i) => {
+    const lever = document.createElement("div");
+    lever.className = "lever";
+    lever.dataset.idx = i;
+
+    const name = document.createElement("div");
+    name.className = "lever-name";
+    name.textContent = dim.label;
+
+    const track = document.createElement("div");
+    track.className = "track";
+    const fill = document.createElement("div");
+    fill.className = "fill";
+    const ticks = document.createElement("div");
+    ticks.className = "track-ticks";
+    const knob = document.createElement("div");
+    knob.className = "knob";
+    track.appendChild(fill);
+    track.appendChild(ticks);
+    track.appendChild(knob);
+
+    const valEl = document.createElement("div");
+    valEl.className = "lever-val";
+
+    lever.appendChild(name);
+    lever.appendChild(track);
+    lever.appendChild(valEl);
+    leversEl.appendChild(lever);
+
+    dim._el = { lever, track, fill, knob, valEl };
+    layoutLever(i);
+    attachDrag(i);
+  });
+
+  function travel() {
+    // available vertical travel for the knob center
+    return TRACK_H - KNOB_H;
+  }
+
+  function layoutLever(i) {
+    const dim = DIMS[i];
+    const frac = (dim.value - MIN) / (MAX - MIN);
+    const t = travel();
+    // knob bottom position: 0 at bottom -> frac up
+    const bottom = frac * t;
+    dim._el.knob.style.bottom = bottom + "px";
+    dim._el.fill.style.height = (bottom + KNOB_H / 2) + "px";
+    dim._el.valEl.innerHTML = dim.value.toFixed(1) + "<small> /10</small>";
+  }
+
+  function setValue(i, v) {
+    v = Math.max(MIN, Math.min(MAX, v));
+    v = Math.round(v / STEP) * STEP;
+    DIMS[i].value = v;
+    layoutLever(i);
+    renderWeb();
+  }
+
+  // ---- Smart gesture disambiguation ----
+  // Each lever uses touch-action: pan-x, so the browser owns horizontal
+  // scrolling. We additionally run an axis-lock so a gesture that starts
+  // mostly-horizontal never nudges the value, and a mostly-vertical gesture
+  // claims the pointer and suppresses scroll momentum.
+  const LOCK_PX = 8;        // movement before we decide an axis
+  const V_BIAS = 1.15;      // vertical must beat horizontal by this ratio
+
+  function attachDrag(i) {
+    const dim = DIMS[i];
+    const { lever, track, knob } = dim._el;
+    let dragging = false, decided = false, mode = null;
+    let startX = 0, startY = 0, startVal = 0, pid = null;
+
+    function onDown(e) {
+      if (pid !== null) return;
+      pid = e.pointerId;
+      dragging = true; decided = false; mode = null;
+      startX = e.clientX; startY = e.clientY;
+      startVal = dim.value;
+      // do NOT capture yet — let the browser keep the option to scroll
+    }
+
+    function onMove(e) {
+      if (!dragging || e.pointerId !== pid) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (!decided) {
+        if (Math.abs(dx) < LOCK_PX && Math.abs(dy) < LOCK_PX) return; // still ambiguous
+        if (Math.abs(dy) > Math.abs(dx) * V_BIAS) {
+          mode = "drag"; decided = true;
+          lever.classList.add("active");
+          try { track.setPointerCapture(pid); } catch (_) {}
+        } else {
+          mode = "scroll"; decided = true; // hand off to native pan-x
+          // release so the browser scrolls cleanly
+          dragging = false; pid = null;
+          return;
+        }
+      }
+
+      if (mode === "drag") {
+        e.preventDefault();
+        // up is positive value. dy negative => increase.
+        const t = travel();
+        const deltaVal = (-dy / t) * (MAX - MIN);
+        setValue(i, startVal + deltaVal);
+      }
+    }
+
+    function onUp(e) {
+      if (e.pointerId !== pid && pid !== null) return;
+      if (mode === "drag") {
+        try { track.releasePointerCapture(pid); } catch (_) {}
+      }
+      lever.classList.remove("active");
+      dragging = false; decided = false; mode = null; pid = null;
+    }
+
+    // Pointer events cover touch + mouse + pen.
+    track.addEventListener("pointerdown", onDown, { passive: true });
+    track.addEventListener("pointermove", onMove, { passive: false });
+    track.addEventListener("pointerup", onUp, { passive: true });
+    track.addEventListener("pointercancel", onUp, { passive: true });
+
+    // Double-tap a knob to reset that dimension to a round value (nicety)
+    let lastTap = 0;
+    knob.addEventListener("pointerup", () => {
+      const now = Date.now();
+      if (now - lastTap < 280) setValue(i, Math.round(dim.value));
+      lastTap = now;
+    });
+  }
+
+  // ===================== Boot =====================
+  buildWeb();
+  renderWeb();
+  window.addEventListener("resize", () => DIMS.forEach((_, i) => layoutLever(i)));
+})();
+</script>
+</body>
+</html>
