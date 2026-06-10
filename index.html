@@ -70,7 +70,7 @@
   }
   .banner:active { border-color: var(--line); }
   .banner-left { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
-  .banner-right { flex: 0 0 auto; text-align: right; display: flex; flex-direction: column; justify-content: center; gap: 1px; max-width: 46%; }
+  .banner-right { flex: 0 0 auto; text-align: right; display: flex; flex-direction: column; justify-content: center; gap: 1px; max-width: 46%; padding-right: 16px; }
 
   .coffee-name {
     font-size: 19px; font-weight: 700; color: var(--crema-bright);
@@ -88,8 +88,8 @@
   .banner-right .r-roast { color: var(--text-dim); }
   .ph { color: var(--text-faint) !important; font-weight: 500 !important; font-style: italic; }
   .edit-hint {
-    position: absolute; top: 6px; right: 8px;
-    font-size: 9px; color: var(--text-faint); letter-spacing: 0.05em;
+    position: absolute; top: 7px; right: 10px;
+    font-size: 15px; line-height: 1; color: var(--text-dim);
   }
 
   /* ---- Spiderweb stage ---- */
@@ -214,7 +214,7 @@
       <div class="r-origin" id="bOrigin"></div>
       <div class="r-roast" id="bRoast"></div>
     </div>
-    <div class="edit-hint">tap to edit</div>
+    <div class="edit-hint" aria-hidden="true">✎</div>
   </div>
 
   <div class="stage">
