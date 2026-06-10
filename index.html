@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#1a120b" />
-<title>Coffee Cupping — Spiderweb</title>
+<title>Coffee Tasting Journal</title>
 <style>
   :root {
     --bg: #1a120b;
@@ -18,6 +18,7 @@
     --accent-soft: rgba(217, 138, 61, 0.22);
     --text: #efe2d2;
     --text-dim: #a8917a;
+    --text-faint: #6f5c47;
     --visible-levers: 4.3;
   }
 
@@ -36,34 +37,66 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  header {
+  /* ---- Top bar ---- */
+  .topbar {
     flex: 0 0 auto;
-    text-align: center;
-    padding: 14px 16px 4px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px 6px;
   }
-  header h1 {
-    margin: 0;
-    font-size: 17px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-weight: 600;
-    color: var(--crema-bright);
+  .brand {
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 600; color: var(--crema);
   }
-  header p {
-    margin: 4px 0 0;
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    color: var(--text-dim);
+  .save-btn {
+    appearance: none; border: 1px solid var(--accent);
+    background: var(--accent-soft); color: var(--crema-bright);
+    font: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em;
+    padding: 6px 16px; border-radius: 20px; cursor: pointer;
+  }
+  .save-btn:active { transform: translateY(1px); }
+
+  /* ---- Banner ---- */
+  .banner {
+    flex: 0 0 auto;
+    margin: 0 12px;
+    padding: 10px 12px;
+    display: flex; align-items: stretch; justify-content: space-between; gap: 10px;
+    background: linear-gradient(180deg, var(--panel), #251710);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .banner:active { border-color: var(--line); }
+  .banner-left { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+  .banner-right { flex: 0 0 auto; text-align: right; display: flex; flex-direction: column; justify-content: center; gap: 1px; max-width: 46%; }
+
+  .coffee-name {
+    font-size: 19px; font-weight: 700; color: var(--crema-bright);
+    line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .coffee-sub {
+    font-size: 11.5px; color: var(--text-dim); margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .banner-right > div {
+    font-size: 11.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .banner-right .r-roaster { color: var(--text); font-weight: 600; font-size: 12.5px; }
+  .banner-right .r-origin { color: var(--text-dim); }
+  .banner-right .r-roast { color: var(--text-dim); }
+  .ph { color: var(--text-faint) !important; font-weight: 500 !important; font-style: italic; }
+  .edit-hint {
+    position: absolute; top: 6px; right: 8px;
+    font-size: 9px; color: var(--text-faint); letter-spacing: 0.05em;
   }
 
   /* ---- Spiderweb stage ---- */
   .stage {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 10px;
+    flex: 1 1 auto; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2px 10px;
   }
   svg.web { width: 100%; height: 100%; display: block; touch-action: none; }
 
@@ -71,27 +104,10 @@
   .grid-ring.outer { stroke: var(--line); }
   .spoke { stroke: var(--line-soft); stroke-width: 1; }
   .ring-num { fill: var(--text-dim); font-size: 7px; opacity: 0.55; }
-
-  .data-area {
-    fill: var(--accent-soft);
-    stroke: var(--accent);
-    stroke-width: 2;
-    stroke-linejoin: round;
-    transition: none;
-  }
+  .data-area { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
   .data-dot { fill: var(--crema-bright); stroke: #2b1d12; stroke-width: 1.5; }
-
-  .axis-label {
-    fill: var(--text);
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-  .axis-val {
-    fill: var(--accent);
-    font-size: 8px;
-    font-weight: 700;
-  }
+  .axis-label { fill: var(--text); font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+  .axis-val { fill: var(--accent); font-size: 8px; font-weight: 700; }
 
   /* ---- Levers ---- */
   .levers-wrap {
@@ -100,108 +116,106 @@
     border-top: 1px solid var(--line-soft);
   }
   .levers-hint {
-    text-align: center;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    color: var(--text-dim);
-    padding: 7px 0 2px;
-    text-transform: uppercase;
+    text-align: center; font-size: 10px; letter-spacing: 0.08em;
+    color: var(--text-dim); padding: 6px 0 2px; text-transform: uppercase;
   }
   .levers {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    padding: 4px 0 12px;
-    scrollbar-width: none;
+    display: flex; gap: 0;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+    padding: 4px 0 10px; scrollbar-width: none;
   }
   .levers::-webkit-scrollbar { display: none; }
-
   .lever {
     flex: 0 0 calc(100% / var(--visible-levers));
     scroll-snap-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex; flex-direction: column; align-items: center;
     padding: 0 2px;
-    /* horizontal panning => scroll; vertical => our drag logic */
     touch-action: pan-x;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: none; -webkit-user-select: none;
   }
   .lever-name {
-    font-size: 9.5px;
-    text-align: center;
-    height: 24px;
-    line-height: 11px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text-dim);
-    letter-spacing: 0.01em;
+    font-size: 10px; text-align: center; height: 16px; line-height: 16px;
+    color: var(--text-dim); letter-spacing: 0.01em;
   }
   .lever.active .lever-name { color: var(--crema-bright); }
-
   .track {
-    position: relative;
-    width: 46px;
-    height: 150px;
-    border-radius: 26px;
-    background:
-      linear-gradient(180deg, #181009, #2a1c11);
+    position: relative; width: 44px; height: 128px; border-radius: 24px;
+    background: linear-gradient(180deg, #181009, #2a1c11);
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.6), inset 0 -1px 0 rgba(255,255,255,0.04);
-    border: 1px solid var(--line-soft);
-    overflow: hidden;
+    border: 1px solid var(--line-soft); overflow: hidden;
   }
-  .fill {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, var(--accent), #9a5a22);
-    opacity: 0.85;
-  }
+  .fill { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, var(--accent), #9a5a22); opacity: 0.85; }
   .track-ticks {
-    position: absolute; inset: 0;
-    background-image: repeating-linear-gradient(
-      to top, transparent 0, transparent 13.6px, rgba(255,255,255,0.05) 13.6px, rgba(255,255,255,0.05) 14.6px);
-    pointer-events: none;
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: repeating-linear-gradient(to top, transparent 0, transparent 11.4px, rgba(255,255,255,0.05) 11.4px, rgba(255,255,255,0.05) 12.4px);
   }
   .knob {
-    position: absolute;
-    left: 50%;
-    width: 52px; height: 30px;
-    margin-left: -26px;
+    position: absolute; left: 50%; width: 50px; height: 28px; margin-left: -25px;
     border-radius: 9px;
     background: linear-gradient(180deg, #f0d6b4, #c69b6d 55%, #a87a4d);
     box-shadow: 0 3px 6px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 3px rgba(0,0,0,0.25);
-    border: 1px solid #8a5f37;
-    cursor: grab;
-    touch-action: pan-x;
+    border: 1px solid #8a5f37; cursor: grab; touch-action: pan-x;
   }
   .knob::after {
-    content: "";
-    position: absolute; left: 8px; right: 8px; top: 50%;
-    height: 0;
+    content: ""; position: absolute; left: 8px; right: 8px; top: 50%; height: 0;
     border-top: 1px solid rgba(90,50,20,0.55);
     box-shadow: 0 -4px 0 -3px rgba(90,50,20,0.4), 0 4px 0 -3px rgba(90,50,20,0.4);
   }
   .lever.active .knob { cursor: grabbing; box-shadow: 0 4px 10px rgba(0,0,0,0.6), 0 0 0 3px var(--accent-soft), inset 0 1px 0 rgba(255,255,255,0.6); }
-
-  .lever-val {
-    margin-top: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--crema-bright);
-    font-variant-numeric: tabular-nums;
-    min-width: 34px; text-align: center;
-  }
+  .lever-val { margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--crema-bright); font-variant-numeric: tabular-nums; min-width: 34px; text-align: center; }
   .lever-val small { font-size: 9px; color: var(--text-dim); font-weight: 500; }
+
+  /* ---- Dialogs ---- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center; padding: 18px;
+  }
+  .overlay[hidden] { display: none; }
+  .dialog {
+    width: 100%; max-width: 420px; max-height: 88dvh; overflow-y: auto;
+    background: linear-gradient(180deg, #2c1d12, #211409);
+    border: 1px solid var(--line); border-radius: 18px;
+    padding: 18px 18px 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .dialog h2 { margin: 0 0 14px; font-size: 16px; color: var(--crema-bright); letter-spacing: 0.04em; }
+  .dialog label { display: block; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 12px; }
+  .dialog input {
+    display: block; width: 100%; margin-top: 5px;
+    background: #160e07; border: 1px solid var(--line-soft); border-radius: 10px;
+    color: var(--text); font: inherit; font-size: 15px; padding: 10px 12px; text-transform: none; letter-spacing: 0;
+  }
+  .dialog input:focus { outline: none; border-color: var(--accent); }
+  .dialog .row { display: flex; gap: 10px; }
+  .dialog .row label { flex: 1; }
+  .dialog-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .btn { flex: 1; appearance: none; border: none; font: inherit; font-weight: 700; font-size: 14px; padding: 12px; border-radius: 12px; cursor: pointer; }
+  .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--text-dim); }
+  .btn.primary { background: linear-gradient(180deg, var(--accent), #b96d28); color: #2a1708; }
+  .btn:active { transform: translateY(1px); }
+  .export-preview { width: 100%; border-radius: 12px; border: 1px solid var(--line-soft); display: block; margin-bottom: 8px; background: #160e07; }
+  .hint-sm { font-size: 11px; color: var(--text-dim); margin: 0 0 14px; text-align: center; }
 </style>
 </head>
 <body>
-  <header>
-    <h1>Coffee Cupping</h1>
-    <p>Drag the levers · swipe sideways for more</p>
-  </header>
+  <div class="topbar">
+    <div class="brand">☕ Tasting Journal</div>
+    <button class="save-btn" id="saveBtn">Save</button>
+  </div>
+
+  <div class="banner" id="banner">
+    <div class="banner-left">
+      <div class="coffee-name" id="bName">Add name</div>
+      <div class="coffee-sub" id="bSub"></div>
+    </div>
+    <div class="banner-right">
+      <div class="r-roaster" id="bRoaster"></div>
+      <div class="r-origin" id="bOrigin"></div>
+      <div class="r-roast" id="bRoast"></div>
+    </div>
+    <div class="edit-hint">tap to edit</div>
+  </div>
 
   <div class="stage">
     <svg class="web" viewBox="0 0 320 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
@@ -212,29 +226,108 @@
     <div class="levers" id="levers"></div>
   </div>
 
+  <!-- Coffee details dialog -->
+  <div class="overlay" id="infoOverlay" hidden>
+    <div class="dialog">
+      <h2>Coffee details</h2>
+      <label>Coffee name<input id="fName" type="text" autocomplete="off" placeholder="e.g. Gesha Natural" /></label>
+      <div class="row">
+        <label>Tasting date<input id="fTasting" type="date" /></label>
+        <label>Brew method<input id="fBrew" type="text" autocomplete="off" placeholder="V60, Espresso…" /></label>
+      </div>
+      <label>Roaster<input id="fRoaster" type="text" autocomplete="off" placeholder="Roaster name" /></label>
+      <label>Origin / farm / producer<input id="fOrigin" type="text" autocomplete="off" placeholder="Region, farm or producer" /></label>
+      <label>Roast date<input id="fRoast" type="date" /></label>
+      <div class="dialog-actions">
+        <button class="btn ghost" id="infoCancel">Cancel</button>
+        <button class="btn primary" id="infoSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export dialog -->
+  <div class="overlay" id="exportOverlay" hidden>
+    <div class="dialog">
+      <h2>Your tasting journal entry is ready</h2>
+      <img class="export-preview" id="exportPreview" alt="Tasting journal preview" />
+      <p class="hint-sm">Tip: on mobile you can also long-press the image to save it to Photos.</p>
+      <div class="dialog-actions">
+        <button class="btn ghost" id="exportCancel">Cancel</button>
+        <button class="btn primary" id="exportDownload">Download Image</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 (() => {
   "use strict";
 
-  // ----- Cupping dimensions (traditional-ish SCA attributes) -----
+  // ----- The eight tasting dimensions -----
   const DIMS = [
-    { key: "fragrance", label: "Fragrance / Aroma", value: 7.2 },
-    { key: "flavor",    label: "Flavor",            value: 8.1 },
-    { key: "aftertaste",label: "Aftertaste",        value: 6.8 },
-    { key: "acidity",   label: "Acidity",           value: 7.6 },
-    { key: "body",      label: "Body",              value: 6.4 },
-    { key: "balance",   label: "Balance",           value: 7.0 },
-    { key: "sweetness", label: "Sweetness",         value: 8.4 },
-    { key: "uniformity",label: "Uniformity",        value: 9.0 },
-    { key: "cleancup",  label: "Clean Cup",         value: 8.7 },
-    { key: "overall",   label: "Overall",           value: 7.8 },
+    { key: "clarity",   label: "Clarity",   value: 7.5 },
+    { key: "balance",   label: "Balance",   value: 7.0 },
+    { key: "sweetness", label: "Sweetness", value: 8.0 },
+    { key: "acidity",   label: "Acidity",   value: 6.5 },
+    { key: "finish",    label: "Finish",    value: 7.0 },
+    { key: "aroma",     label: "Aroma",     value: 7.5 },
+    { key: "body",      label: "Body",      value: 6.5 },
+    { key: "taste",     label: "Taste",     value: 8.0 },
   ];
   const MIN = 0, MAX = 10, STEP = 0.1;
+  const STORE_KEY = "coffeeTasting.v2";
 
-  // ===================== Spiderweb =====================
+  // ----- Coffee metadata -----
+  const meta = { name: "", tasting: "", brew: "", roaster: "", origin: "", roast: "" };
+
+  // ----- Persistence (device-local) -----
+  function persist() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        meta, values: DIMS.map(d => d.value)
+      }));
+    } catch (_) {}
+  }
+  function restore() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.meta) Object.assign(meta, data.meta);
+      if (Array.isArray(data.values)) data.values.forEach((v, i) => { if (DIMS[i] && typeof v === "number") DIMS[i].value = v; });
+    } catch (_) {}
+  }
+
+  function fmtDate(s) {
+    if (!s) return "";
+    const d = new Date(s + "T00:00:00");
+    if (isNaN(d)) return s;
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  // ===================== Banner =====================
+  const bName = document.getElementById("bName");
+  const bSub = document.getElementById("bSub");
+  const bRoaster = document.getElementById("bRoaster");
+  const bOrigin = document.getElementById("bOrigin");
+  const bRoast = document.getElementById("bRoast");
+
+  function setField(el, value, placeholder) {
+    if (value) { el.textContent = value; el.classList.remove("ph"); }
+    else { el.textContent = placeholder; el.classList.add("ph"); }
+  }
+  function renderBanner() {
+    setField(bName, meta.name, "Add name");
+    const sub = [fmtDate(meta.tasting), meta.brew].filter(Boolean).join("  ·  ");
+    setField(bSub, sub, "Tasting date · Brew method");
+    setField(bRoaster, meta.roaster, "Roaster");
+    setField(bOrigin, meta.origin, "Origin / producer");
+    setField(bRoast, meta.roast ? "Roasted " + fmtDate(meta.roast) : "", "Roast date");
+  }
+
+  // ===================== Spiderweb (SVG, display-only) =====================
   const SVGNS = "http://www.w3.org/2000/svg";
   const svg = document.querySelector("svg.web");
-  const VB = 320, CX = VB / 2, CY = VB / 2 + 6, R = 108;
+  const VB = 320, CX = VB / 2, CY = VB / 2 + 4, R = 104;
   const RINGS = 5;
   const N = DIMS.length;
 
@@ -245,17 +338,14 @@
   }
 
   function buildWeb() {
-    // concentric polygon rings
     for (let r = 1; r <= RINGS; r++) {
-      const frac = r / RINGS;
-      const pts = [];
+      const frac = r / RINGS, pts = [];
       for (let i = 0; i < N; i++) pts.push(pointAt(i, frac).map(v => v.toFixed(1)).join(","));
       const poly = document.createElementNS(SVGNS, "polygon");
       poly.setAttribute("points", pts.join(" "));
       poly.setAttribute("class", "grid-ring" + (r === RINGS ? " outer" : ""));
       svg.appendChild(poly);
     }
-    // spokes + value scale numbers on the top spoke
     for (let i = 0; i < N; i++) {
       const [x, y] = pointAt(i, 1);
       const spoke = document.createElementNS(SVGNS, "line");
@@ -264,7 +354,6 @@
       spoke.setAttribute("class", "spoke");
       svg.appendChild(spoke);
     }
-    // scale numbers along the vertical (top) axis
     for (let r = 1; r <= RINGS; r++) {
       const frac = r / RINGS;
       const num = document.createElementNS(SVGNS, "text");
@@ -275,26 +364,19 @@
       svg.appendChild(num);
     }
 
-    // data area + dots
     const area = document.createElementNS(SVGNS, "polygon");
     area.setAttribute("class", "data-area");
     svg.appendChild(area);
-    svg._area = area;
-    svg._dots = [];
-    svg._labels = [];
-    svg._vals = [];
+    svg._area = area; svg._dots = []; svg._vals = [];
 
     for (let i = 0; i < N; i++) {
       const dot = document.createElementNS(SVGNS, "circle");
-      dot.setAttribute("r", "3");
-      dot.setAttribute("class", "data-dot");
-      svg.appendChild(dot);
-      svg._dots.push(dot);
+      dot.setAttribute("r", "3"); dot.setAttribute("class", "data-dot");
+      svg.appendChild(dot); svg._dots.push(dot);
 
-      // axis label (every point labeled, even if tiny)
       const a = angleFor(i);
-      const lx = CX + Math.cos(a) * (R + 22);
-      const ly = CY + Math.sin(a) * (R + 22);
+      const lx = CX + Math.cos(a) * (R + 18);
+      const ly = CY + Math.sin(a) * (R + 18);
       const cos = Math.cos(a);
       const label = document.createElementNS(SVGNS, "text");
       label.setAttribute("class", "axis-label");
@@ -302,30 +384,14 @@
       label.setAttribute("y", ly.toFixed(1));
       label.setAttribute("text-anchor", Math.abs(cos) < 0.25 ? "middle" : (cos > 0 ? "start" : "end"));
       label.setAttribute("dominant-baseline", "middle");
-      // wrap long labels onto two lines
-      const words = DIMS[i].label.split(" ");
-      if (words.length > 1 && DIMS[i].label.length > 8) {
-        const mid = Math.ceil(words.length / 2);
-        const t1 = document.createElementNS(SVGNS, "tspan");
-        t1.setAttribute("x", lx.toFixed(1)); t1.setAttribute("dy", "-0.4em");
-        t1.textContent = words.slice(0, mid).join(" ");
-        const t2 = document.createElementNS(SVGNS, "tspan");
-        t2.setAttribute("x", lx.toFixed(1)); t2.setAttribute("dy", "1.1em");
-        t2.textContent = words.slice(mid).join(" ");
-        label.appendChild(t1); label.appendChild(t2);
-      } else {
-        label.textContent = DIMS[i].label;
-      }
+      label.textContent = DIMS[i].label;
       svg.appendChild(label);
-      svg._labels.push(label);
 
-      // numeric value at each vertex
       const val = document.createElementNS(SVGNS, "text");
       val.setAttribute("class", "axis-val");
       val.setAttribute("text-anchor", "middle");
       val.setAttribute("dominant-baseline", "middle");
-      svg.appendChild(val);
-      svg._vals.push(val);
+      svg.appendChild(val); svg._vals.push(val);
     }
   }
 
@@ -337,7 +403,6 @@
       pts.push(x.toFixed(1) + "," + y.toFixed(1));
       svg._dots[i].setAttribute("cx", x.toFixed(1));
       svg._dots[i].setAttribute("cy", y.toFixed(1));
-      // place value label slightly outside the dot, toward center-out
       const a = angleFor(i);
       const vx = CX + Math.cos(a) * (R * frac - 11);
       const vy = CY + Math.sin(a) * (R * frac - 11);
@@ -350,59 +415,35 @@
 
   // ===================== Levers =====================
   const leversEl = document.getElementById("levers");
-  const TRACK_H = 150;       // px usable travel reference
-  const KNOB_H = 30;
+  const TRACK_H = 128, KNOB_H = 28;
+  function travel() { return TRACK_H - KNOB_H; }
 
   DIMS.forEach((dim, i) => {
     const lever = document.createElement("div");
     lever.className = "lever";
-    lever.dataset.idx = i;
-
     const name = document.createElement("div");
-    name.className = "lever-name";
-    name.textContent = dim.label;
-
-    const track = document.createElement("div");
-    track.className = "track";
-    const fill = document.createElement("div");
-    fill.className = "fill";
-    const ticks = document.createElement("div");
-    ticks.className = "track-ticks";
-    const knob = document.createElement("div");
-    knob.className = "knob";
-    track.appendChild(fill);
-    track.appendChild(ticks);
-    track.appendChild(knob);
-
-    const valEl = document.createElement("div");
-    valEl.className = "lever-val";
-
-    lever.appendChild(name);
-    lever.appendChild(track);
-    lever.appendChild(valEl);
+    name.className = "lever-name"; name.textContent = dim.label;
+    const track = document.createElement("div"); track.className = "track";
+    const fill = document.createElement("div"); fill.className = "fill";
+    const ticks = document.createElement("div"); ticks.className = "track-ticks";
+    const knob = document.createElement("div"); knob.className = "knob";
+    track.appendChild(fill); track.appendChild(ticks); track.appendChild(knob);
+    const valEl = document.createElement("div"); valEl.className = "lever-val";
+    lever.appendChild(name); lever.appendChild(track); lever.appendChild(valEl);
     leversEl.appendChild(lever);
-
     dim._el = { lever, track, fill, knob, valEl };
     layoutLever(i);
     attachDrag(i);
   });
 
-  function travel() {
-    // available vertical travel for the knob center
-    return TRACK_H - KNOB_H;
-  }
-
   function layoutLever(i) {
     const dim = DIMS[i];
     const frac = (dim.value - MIN) / (MAX - MIN);
-    const t = travel();
-    // knob bottom position: 0 at bottom -> frac up
-    const bottom = frac * t;
+    const bottom = frac * travel();
     dim._el.knob.style.bottom = bottom + "px";
     dim._el.fill.style.height = (bottom + KNOB_H / 2) + "px";
     dim._el.valEl.innerHTML = dim.value.toFixed(1) + "<small> /10</small>";
   }
-
   function setValue(i, v) {
     v = Math.max(MIN, Math.min(MAX, v));
     v = Math.round(v / STEP) * STEP;
@@ -411,14 +452,8 @@
     renderWeb();
   }
 
-  // ---- Smart gesture disambiguation ----
-  // Each lever uses touch-action: pan-x, so the browser owns horizontal
-  // scrolling. We additionally run an axis-lock so a gesture that starts
-  // mostly-horizontal never nudges the value, and a mostly-vertical gesture
-  // claims the pointer and suppresses scroll momentum.
-  const LOCK_PX = 8;        // movement before we decide an axis
-  const V_BIAS = 1.15;      // vertical must beat horizontal by this ratio
-
+  // ---- Smart scroll-vs-drag disambiguation ----
+  const LOCK_PX = 8, V_BIAS = 1.15;
   function attachDrag(i) {
     const dim = DIMS[i];
     const { lever, track, knob } = dim._el;
@@ -427,68 +462,236 @@
 
     function onDown(e) {
       if (pid !== null) return;
-      pid = e.pointerId;
-      dragging = true; decided = false; mode = null;
-      startX = e.clientX; startY = e.clientY;
-      startVal = dim.value;
-      // do NOT capture yet — let the browser keep the option to scroll
+      pid = e.pointerId; dragging = true; decided = false; mode = null;
+      startX = e.clientX; startY = e.clientY; startVal = dim.value;
     }
-
     function onMove(e) {
       if (!dragging || e.pointerId !== pid) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
+      const dx = e.clientX - startX, dy = e.clientY - startY;
       if (!decided) {
-        if (Math.abs(dx) < LOCK_PX && Math.abs(dy) < LOCK_PX) return; // still ambiguous
+        if (Math.abs(dx) < LOCK_PX && Math.abs(dy) < LOCK_PX) return;
         if (Math.abs(dy) > Math.abs(dx) * V_BIAS) {
           mode = "drag"; decided = true;
           lever.classList.add("active");
           try { track.setPointerCapture(pid); } catch (_) {}
-        } else {
-          mode = "scroll"; decided = true; // hand off to native pan-x
-          // release so the browser scrolls cleanly
-          dragging = false; pid = null;
-          return;
-        }
+        } else { mode = "scroll"; decided = true; dragging = false; pid = null; return; }
       }
-
       if (mode === "drag") {
         e.preventDefault();
-        // up is positive value. dy negative => increase.
-        const t = travel();
-        const deltaVal = (-dy / t) * (MAX - MIN);
+        const deltaVal = (-dy / travel()) * (MAX - MIN);
         setValue(i, startVal + deltaVal);
       }
     }
-
     function onUp(e) {
       if (e.pointerId !== pid && pid !== null) return;
-      if (mode === "drag") {
-        try { track.releasePointerCapture(pid); } catch (_) {}
-      }
+      if (mode === "drag") { try { track.releasePointerCapture(pid); } catch (_) {} persist(); }
       lever.classList.remove("active");
       dragging = false; decided = false; mode = null; pid = null;
     }
-
-    // Pointer events cover touch + mouse + pen.
     track.addEventListener("pointerdown", onDown, { passive: true });
     track.addEventListener("pointermove", onMove, { passive: false });
     track.addEventListener("pointerup", onUp, { passive: true });
     track.addEventListener("pointercancel", onUp, { passive: true });
 
-    // Double-tap a knob to reset that dimension to a round value (nicety)
     let lastTap = 0;
     knob.addEventListener("pointerup", () => {
       const now = Date.now();
-      if (now - lastTap < 280) setValue(i, Math.round(dim.value));
+      if (now - lastTap < 280) { setValue(i, Math.round(dim.value)); persist(); }
       lastTap = now;
     });
   }
 
+  // ===================== Info dialog =====================
+  const infoOverlay = document.getElementById("infoOverlay");
+  const F = {
+    name: document.getElementById("fName"),
+    tasting: document.getElementById("fTasting"),
+    brew: document.getElementById("fBrew"),
+    roaster: document.getElementById("fRoaster"),
+    origin: document.getElementById("fOrigin"),
+    roast: document.getElementById("fRoast"),
+  };
+  function openInfo() {
+    F.name.value = meta.name; F.tasting.value = meta.tasting; F.brew.value = meta.brew;
+    F.roaster.value = meta.roaster; F.origin.value = meta.origin; F.roast.value = meta.roast;
+    infoOverlay.hidden = false;
+  }
+  function closeInfo() { infoOverlay.hidden = true; }
+  function saveInfo() {
+    meta.name = F.name.value.trim(); meta.tasting = F.tasting.value; meta.brew = F.brew.value.trim();
+    meta.roaster = F.roaster.value.trim(); meta.origin = F.origin.value.trim(); meta.roast = F.roast.value;
+    renderBanner(); persist(); closeInfo();
+  }
+  document.getElementById("banner").addEventListener("click", openInfo);
+  document.getElementById("infoCancel").addEventListener("click", closeInfo);
+  document.getElementById("infoSave").addEventListener("click", saveInfo);
+  infoOverlay.addEventListener("click", (e) => { if (e.target === infoOverlay) closeInfo(); });
+
+  // ===================== Export (canvas image) =====================
+  const exportOverlay = document.getElementById("exportOverlay");
+  const exportPreview = document.getElementById("exportPreview");
+  let currentBlob = null;
+
+  function roundRect(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y);
+    g.arcTo(x + w, y, x + w, y + h, r);
+    g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r);
+    g.arcTo(x, y, x + w, y, r);
+    g.closePath();
+  }
+
+  function drawJournal() {
+    const W = 1080, H = 1500, PAD = 64;
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const g = c.getContext("2d");
+
+    // background
+    const bg = g.createRadialGradient(W / 2, 0, 100, W / 2, H * 0.5, H);
+    bg.addColorStop(0, "#241810"); bg.addColorStop(1, "#160e07");
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+
+    const SANS = '"Segoe UI", system-ui, sans-serif';
+
+    // brand
+    g.textAlign = "center"; g.textBaseline = "alphabetic";
+    g.fillStyle = "#c8a27a"; g.font = "600 26px " + SANS;
+    g.fillText("C O F F E E   T A S T I N G   J O U R N A L", W / 2, 72);
+
+    // banner block
+    g.textAlign = "left"; g.textBaseline = "alphabetic";
+    g.fillStyle = "#e8c79c"; g.font = "700 52px " + SANS;
+    g.fillText(meta.name || "Unnamed Coffee", PAD, 156);
+    g.fillStyle = "#a8917a"; g.font = "400 27px " + SANS;
+    const sub = [fmtDate(meta.tasting), meta.brew].filter(Boolean).join("   ·   ");
+    if (sub) g.fillText(sub, PAD, 196);
+
+    g.textAlign = "right";
+    g.fillStyle = "#efe2d2"; g.font = "600 28px " + SANS;
+    if (meta.roaster) g.fillText(meta.roaster, W - PAD, 120);
+    g.fillStyle = "#a8917a"; g.font = "400 25px " + SANS;
+    if (meta.origin) g.fillText(meta.origin, W - PAD, 156);
+    if (meta.roast) g.fillText("Roasted " + fmtDate(meta.roast), W - PAD, 190);
+
+    // divider
+    g.strokeStyle = "#3d2e1f"; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(PAD, 224); g.lineTo(W - PAD, 224); g.stroke();
+
+    // radar
+    const cx = W / 2, cy = 760, RR = 340;
+    drawRadar(g, cx, cy, RR);
+
+    // overall score footer
+    const avg = DIMS.reduce((s, d) => s + d.value, 0) / DIMS.length;
+    g.textAlign = "center";
+    g.fillStyle = "#a8917a"; g.font = "600 24px " + SANS;
+    g.fillText("OVERALL", W / 2, 1330);
+    g.fillStyle = "#e8c79c"; g.font = "700 80px " + SANS;
+    g.fillText(avg.toFixed(1) + "  /  10", W / 2, 1410);
+
+    return c;
+  }
+
+  function drawRadar(g, cx, cy, RR) {
+    const SANS = '"Segoe UI", system-ui, sans-serif';
+    // rings
+    for (let r = 1; r <= RINGS; r++) {
+      const f = r / RINGS;
+      g.beginPath();
+      for (let i = 0; i < N; i++) {
+        const a = angleFor(i), x = cx + Math.cos(a) * RR * f, y = cy + Math.sin(a) * RR * f;
+        i ? g.lineTo(x, y) : g.moveTo(x, y);
+      }
+      g.closePath();
+      g.strokeStyle = r === RINGS ? "#5a4632" : "#3d2e1f";
+      g.lineWidth = r === RINGS ? 2.5 : 1.5; g.stroke();
+    }
+    // spokes
+    g.strokeStyle = "#3d2e1f"; g.lineWidth = 1.5;
+    for (let i = 0; i < N; i++) {
+      const a = angleFor(i);
+      g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * RR, cy + Math.sin(a) * RR); g.stroke();
+    }
+    // data area
+    g.beginPath();
+    for (let i = 0; i < N; i++) {
+      const f = DIMS[i].value / 10, a = angleFor(i);
+      const x = cx + Math.cos(a) * RR * f, y = cy + Math.sin(a) * RR * f;
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    }
+    g.closePath();
+    g.fillStyle = "rgba(217,138,61,0.25)"; g.fill();
+    g.strokeStyle = "#d98a3d"; g.lineWidth = 4.5; g.lineJoin = "round"; g.stroke();
+
+    // dots, vertex values, labels
+    for (let i = 0; i < N; i++) {
+      const f = DIMS[i].value / 10, a = angleFor(i), cos = Math.cos(a), sin = Math.sin(a);
+      const x = cx + cos * RR * f, y = cy + sin * RR * f;
+      g.fillStyle = "#e8c79c";
+      g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = "#2b1d12"; g.lineWidth = 2; g.stroke();
+
+      // vertex value (inset toward centre)
+      const vx = cx + cos * (RR * f - 30), vy = cy + sin * (RR * f - 30);
+      g.fillStyle = "#d98a3d"; g.font = "700 26px " + SANS;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(DIMS[i].value.toFixed(1), vx, vy);
+
+      // axis label outside
+      const lx = cx + cos * (RR + 52), ly = cy + sin * (RR + 52);
+      g.fillStyle = "#efe2d2"; g.font = "700 32px " + SANS;
+      g.textAlign = Math.abs(cos) < 0.25 ? "center" : (cos > 0 ? "left" : "right");
+      g.textBaseline = "middle";
+      g.fillText(DIMS[i].label, lx, ly);
+    }
+  }
+
+  function openExport() {
+    const canvas = drawJournal();
+    canvas.toBlob((blob) => {
+      currentBlob = blob;
+      if (exportPreview.dataset.url) URL.revokeObjectURL(exportPreview.dataset.url);
+      const url = URL.createObjectURL(blob);
+      exportPreview.dataset.url = url;
+      exportPreview.src = url;
+      exportOverlay.hidden = false;
+    }, "image/png");
+  }
+  function closeExport() { exportOverlay.hidden = true; }
+
+  async function downloadImage() {
+    if (!currentBlob) return;
+    const safe = (meta.name || "coffee-tasting").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || "coffee-tasting";
+    const fname = safe + ".png";
+    // Prefer the native share sheet on mobile (lets user Save to Photos)
+    try {
+      const file = new File([currentBlob], fname, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "Coffee tasting", text: meta.name || "Coffee tasting" });
+        return;
+      }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    // Fallback: direct download
+    const url = URL.createObjectURL(currentBlob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", openExport);
+  document.getElementById("exportCancel").addEventListener("click", closeExport);
+  document.getElementById("exportDownload").addEventListener("click", downloadImage);
+  exportOverlay.addEventListener("click", (e) => { if (e.target === exportOverlay) closeExport(); });
+
   // ===================== Boot =====================
+  restore();
+  renderBanner();
   buildWeb();
   renderWeb();
+  DIMS.forEach((_, i) => layoutLever(i));
   window.addEventListener("resize", () => DIMS.forEach((_, i) => layoutLever(i)));
 })();
 </script>
